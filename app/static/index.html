@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HotelPro | Enterprise Hotel Booking & Management Suite</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col space-y-2 max-w-sm"></div>
+
+  <!-- Top Enterprise Navigation Bar -->
+  <header class="bg-slate-900 text-white border-b border-slate-800 shadow-sm sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <div class="flex items-center space-x-3">
+        <div class="w-8 h-8 rounded-lg bg-sky-600 flex items-center justify-center font-black text-white text-lg tracking-wider">H</div>
+        <div>
+          <span class="font-extrabold text-lg tracking-tight text-white">HotelPro</span>
+          <span class="text-[10px] bg-sky-950 text-sky-400 font-bold px-2 py-0.5 rounded border border-sky-800 ml-2">v1.0 ENTERPRISE</span>
+        </div>
+      </div>
+
+      <!-- Property & Status Header -->
+      <div class="hidden md:flex items-center space-x-6 text-xs text-slate-300">
+        <div class="flex items-center space-x-2">
+          <span class="pulse-live"></span>
+          <span class="font-semibold text-slate-100">Grand Horizon Resort & Spa</span>
+          <span class="text-slate-500">[GH-MIA]</span>
+        </div>
+        <div class="border-l border-slate-700 pl-4">
+          <span class="text-slate-400">Business Date:</span>
+          <span id="header-business-date" class="font-bold text-sky-400 ml-1">Today</span>
+        </div>
+      </div>
+
+      <!-- Quick Role Switcher & Auth Pill -->
+      <div class="flex items-center space-x-3">
+        <div id="staff-profile-pill"></div>
+        <div class="relative inline-block text-left">
+          <select id="staff-role-switcher" onchange="const p = state.staffPresets[this.value]; loginStaffPreset(p.username, p.password);" 
+            class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-2.5 py-1.5 focus:ring-sky-500 focus:border-sky-500">
+            <option value="0">Role: Front Desk (Marcus)</option>
+            <option value="1">Role: General Manager (Elena)</option>
+            <option value="2">Role: Housekeeping (Rosa)</option>
+            <option value="3">Role: Night Auditor (David)</option>
+            <option value="4">Role: Super Admin (Alex)</option>
+          </select>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Main Navigation Bar -->
+    <div class="bg-white border-b border-slate-200 text-slate-600">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex space-x-8 text-sm">
+        <button onclick="switchMainTab('guest-booking')" data-tab="guest-booking" class="main-tab-btn py-3 px-2 font-semibold hover:text-sky-600 transition flex items-center space-x-2 text-sky-600 border-b-2 border-sky-600">
+          <span>🛎️ Guest Booking Engine</span>
+        </button>
+        <button onclick="switchMainTab('guest-folio')" data-tab="guest-folio" class="main-tab-btn py-3 px-2 font-medium hover:text-sky-600 transition flex items-center space-x-2">
+          <span>📱 My Folio & Digital Key</span>
+        </button>
+        <button onclick="switchMainTab('staff-portal')" data-tab="staff-portal" class="main-tab-btn py-3 px-2 font-medium hover:text-sky-600 transition flex items-center space-x-2">
+          <span>💼 Staff Operations Portal</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
+
+    <!-- ========================================== -->
+    <!-- VIEW 1: GUEST BOOKING ENGINE -->
+    <!-- ========================================== -->
+    <section id="view-guest-booking">
+      
+      <!-- Live Search Bar -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8">
+        <h2 class="text-xl font-bold text-slate-900 mb-4">Book Your Stay with Dynamic Yield Rates</h2>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Check-in Date</label>
+            <input type="date" id="search-checkin" class="w-full bg-slate-50 border rounded-lg px-3 py-2 text-sm focus:ring-sky-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Check-out Date</label>
+            <input type="date" id="search-checkout" class="w-full bg-slate-50 border rounded-lg px-3 py-2 text-sm focus:ring-sky-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Promo / Corporate Code</label>
+            <input type="text" id="search-promo" placeholder="e.g. CORP20" class="w-full bg-slate-50 border rounded-lg px-3 py-2 text-sm focus:ring-sky-500">
+          </div>
+          <div class="flex items-end">
+            <button onclick="searchRooms()" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-2.5 px-4 rounded-lg text-sm shadow transition">
+              🔍 Check Real-Time Availability
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Room Listings Grid -->
+      <div id="room-listings" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- VIEW 2: GUEST FOLIO & DIGITAL KEY -->
+    <!-- ========================================== -->
+    <section id="view-guest-folio" class="hidden max-w-3xl mx-auto">
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
+        <h2 class="text-xl font-bold text-slate-900 mb-2">Guest Digital Folio & Keycard Access</h2>
+        <p class="text-xs text-slate-500 mb-4">Track real-time room charges, split billing incidentals, and digital room key credentials.</p>
+        <div class="flex space-x-3">
+          <input type="text" id="lookup-ref-input" placeholder="Enter Booking Reference (e.g. HP-2026-9B3F)" 
+            class="flex-1 bg-slate-50 border rounded-lg px-3 py-2 text-sm focus:ring-sky-500">
+          <button onclick="lookupGuestFolio()" class="bg-slate-900 hover:bg-slate-800 text-white font-semibold px-5 py-2 rounded-lg text-sm">
+            Lookup Folio
+          </button>
+        </div>
+      </div>
+
+      <!-- Result Card -->
+      <div id="guest-folio-result" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        
+        <!-- Header -->
+        <div class="bg-slate-900 text-white p-6 flex justify-between items-start">
+          <div>
+            <span class="text-xs font-bold text-sky-400 uppercase tracking-wider">Confirmed Stay</span>
+            <h3 id="folio-ref" class="text-2xl font-black text-white"></h3>
+            <p id="folio-guest" class="text-sm text-slate-300"></p>
+          </div>
+          <div class="text-right">
+            <span id="folio-status" class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-bold px-3 py-1 rounded-full"></span>
+            <div id="folio-room" class="text-lg font-bold text-white mt-2"></div>
+            <div id="folio-dates" class="text-xs text-slate-400"></div>
+          </div>
+        </div>
+
+        <!-- Digital Keycard Widget -->
+        <div id="digital-key-widget" class="hidden bg-gradient-to-r from-sky-600 to-indigo-700 text-white p-6 m-6 rounded-xl shadow-inner flex items-center justify-between">
+          <div>
+            <div class="text-xs font-bold uppercase tracking-wider text-sky-200">📱 Native Mobile Keycard Activated</div>
+            <div id="digital-key-room" class="text-2xl font-extrabold mt-1"></div>
+            <div class="text-[11px] text-sky-100 mt-1">Tap phone against NFC/BLE door lock encoder to unlock.</div>
+          </div>
+          <div class="bg-white/20 p-3 rounded-full text-2xl">🔑</div>
+        </div>
+
+        <!-- Folio Line Items Table -->
+        <div class="p-6">
+          <h4 class="text-sm font-bold text-slate-900 mb-3">Live Folio Statement</h4>
+          <table class="w-full text-left">
+            <thead>
+              <tr class="border-b text-xs text-slate-400 uppercase">
+                <th class="py-2">Description</th>
+                <th class="py-2">Category</th>
+                <th class="py-2 text-right">Amount</th>
+                <th class="py-2 text-right">Tax</th>
+              </tr>
+            </thead>
+            <tbody id="folio-items-table"></tbody>
+          </table>
+          <div class="mt-4 pt-4 border-t flex justify-between items-center">
+            <span class="text-sm font-semibold text-slate-700">Total Outstanding Balance:</span>
+            <span id="folio-total-balance" class="text-2xl font-black text-rose-600"></span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- VIEW 3: STAFF OPERATIONS & ADMIN PORTAL -->
+    <!-- ========================================== -->
+    <section id="view-staff-portal" class="hidden">
+      
+      <!-- Staff Secondary Navigation -->
+      <div class="bg-white border rounded-xl p-2 mb-6 shadow-sm flex flex-wrap gap-2">
+        <button onclick="switchStaffTab('frontdesk')" data-tab="frontdesk" class="staff-tab-btn px-4 py-2 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-100 flex items-center space-x-1.5 bg-sky-50 text-sky-700">
+          <span>⚡ Sub-60s Front Desk</span>
+        </button>
+        <button onclick="switchStaffTab('housekeeping')" data-tab="housekeeping" class="staff-tab-btn px-4 py-2 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-100 flex items-center space-x-1.5">
+          <span>🧹 Housekeeping Board</span>
+        </button>
+        <button onclick="switchStaffTab('folios')" data-tab="folios" class="staff-tab-btn px-4 py-2 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-100 flex items-center space-x-1.5">
+          <span>💳 Split Folios & Billing</span>
+        </button>
+        <button onclick="switchStaffTab('nightaudit')" data-tab="nightaudit" class="staff-tab-btn px-4 py-2 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-100 flex items-center space-x-1.5">
+          <span>🌙 Night Audit & ERP Sync</span>
+        </button>
+        <button onclick="switchStaffTab('audit')" data-tab="audit" class="staff-tab-btn px-4 py-2 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-100 flex items-center space-x-1.5">
+          <span>🛡️ Tamper-Evident Audit Ledger</span>
+        </button>
+      </div>
+
+      <!-- Panel A: Front Desk Operations -->
+      <div id="panel-frontdesk" class="staff-panel space-y-8">
+        
+        <!-- Arrivals -->
+        <div class="bg-white border rounded-2xl shadow-sm p-6">
+          <div class="flex justify-between items-center mb-4">
+            <div>
+              <h3 class="text-base font-bold text-slate-900">Today's Arrivals (Expedited Check-In Flow)</h3>
+              <p class="text-xs text-slate-500">Sub-60-second check-in with pre-auth incidental hold and instant RFID/BLE keycard encoder issuance.</p>
+            </div>
+            <button onclick="loadFrontDeskData()" class="text-xs text-sky-600 hover:underline">🔄 Refresh</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left">
+              <thead>
+                <tr class="border-b text-[11px] text-slate-400 uppercase tracking-wider">
+                  <th class="py-2">Reference</th>
+                  <th class="py-2">Guest Name</th>
+                  <th class="py-2">Room Type</th>
+                  <th class="py-2">Stay Dates</th>
+                  <th class="py-2">Notes</th>
+                  <th class="py-2 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody id="frontdesk-arrivals-table"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Departures -->
+        <div class="bg-white border rounded-2xl shadow-sm p-6">
+          <div class="flex justify-between items-center mb-4">
+            <div>
+              <h3 class="text-base font-bold text-slate-900">Today's Departures (Expedited Check-Out Flow)</h3>
+              <p class="text-xs text-slate-500">Single-click checkout: settles folio balances, deactivates door lock credentials, and syncs room to DIRTY.</p>
+            </div>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left">
+              <thead>
+                <tr class="border-b text-[11px] text-slate-400 uppercase tracking-wider">
+                  <th class="py-2">Room</th>
+                  <th class="py-2">Guest Name</th>
+                  <th class="py-2">Booking Ref</th>
+                  <th class="py-2">Open Balance</th>
+                  <th class="py-2 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody id="frontdesk-departures-table"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Panel B: Housekeeping Board -->
+      <div id="panel-housekeeping" class="staff-panel hidden">
+        <div class="bg-white border rounded-2xl shadow-sm p-6">
+          <div class="flex justify-between items-center mb-6">
+            <div>
+              <h3 class="text-base font-bold text-slate-900">Real-Time Housekeeping & Turnaround Board</h3>
+              <p class="text-xs text-slate-500">Live room cleanliness state machine with sub-second synchronization to front desk inventory.</p>
+            </div>
+            <button onclick="loadHousekeepingBoard()" class="text-xs text-sky-600 hover:underline">🔄 Refresh Board</button>
+          </div>
+          <div id="housekeeping-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+        </div>
+      </div>
+
+      <!-- Panel C: Split Folios & Billing -->
+      <div id="panel-folios" class="staff-panel hidden space-y-6">
+        <div class="bg-white border rounded-2xl shadow-sm p-6">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <div>
+              <h3 class="text-base font-bold text-slate-900">Multi-Payer Split Folio & Incidental Manager</h3>
+              <p class="text-xs text-slate-500">Partition charges between Corporate Master Folio (Room & Tax) and Guest Incidental Folio (F&B/Minibar).</p>
+            </div>
+            <div class="flex items-center space-x-2">
+              <label class="text-xs font-semibold text-slate-600">In-House Guest:</label>
+              <select id="folio-reservation-select" onchange="refreshActiveFolio()" class="bg-slate-50 border rounded-lg px-3 py-1.5 text-xs font-medium"></select>
+            </div>
+          </div>
+          <div id="split-folios-container" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+        </div>
+      </div>
+
+      <!-- Panel D: Night Audit & ERP Sync -->
+      <div id="panel-nightaudit" class="staff-panel hidden">
+        <div class="bg-white border rounded-2xl shadow-sm p-6">
+          <div class="flex justify-between items-center mb-6">
+            <div>
+              <h3 class="text-base font-bold text-slate-900">Single-Click Night Audit & EOD Reconciliation</h3>
+              <p class="text-xs text-slate-500">Automated posting of room charges, ledger balance audit, and business date roll-over.</p>
+            </div>
+          </div>
+          
+          <!-- Diagnostics Checklist -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-slate-50 border rounded-xl p-4">
+              <div class="text-xs text-slate-500 font-medium">Business Date</div>
+              <div id="audit-business-date" class="text-xl font-extrabold text-slate-900 mt-1">—</div>
+            </div>
+            <div class="bg-slate-50 border rounded-xl p-4">
+              <div class="text-xs text-slate-500 font-medium">Pending Arrivals</div>
+              <div id="audit-pending-arrivals" class="text-xl font-extrabold text-amber-600 mt-1">—</div>
+            </div>
+            <div class="bg-slate-50 border rounded-xl p-4">
+              <div class="text-xs text-slate-500 font-medium">Active In-House Stays</div>
+              <div id="audit-in-house" class="text-xl font-extrabold text-emerald-600 mt-1">—</div>
+            </div>
+            <div class="bg-slate-50 border rounded-xl p-4">
+              <div class="text-xs text-slate-500 font-medium">Overdue Departures</div>
+              <div id="audit-overdue-departures" class="text-xl font-extrabold text-rose-600 mt-1">—</div>
+            </div>
+          </div>
+
+          <!-- Audit Trigger -->
+          <div class="bg-slate-900 text-white rounded-xl p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div>
+              <h4 class="text-lg font-bold">Ready to close business day?</h4>
+              <p class="text-xs text-slate-400 mt-1">This will automatically post room rate & lodging tax to all in-house Master Folios and advance the hotel operational date.</p>
+            </div>
+            <button onclick="executeNightAudit()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold px-6 py-3 rounded-lg text-sm shadow-lg whitespace-nowrap">
+              🌙 Execute Night Audit
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Panel E: Tamper-Evident Audit Ledger -->
+      <div id="panel-audit" class="staff-panel hidden">
+        <div class="bg-white border rounded-2xl shadow-sm p-6">
+          <div class="flex justify-between items-center mb-4">
+            <div>
+              <h3 class="text-base font-bold text-slate-900">Tamper-Evident Append-Only Audit Ledger</h3>
+              <p class="text-xs text-slate-500">Every room status change, folio update, and financial charge chained via SHA-256 cryptographic signatures.</p>
+            </div>
+            <button onclick="verifyLedgerIntegrity()" class="bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs px-4 py-2 rounded-lg shadow">
+              🛡️ Verify Hash-Chain Integrity
+            </button>
+          </div>
+          
+          <div id="integrity-badge" class="hidden mb-4"></div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left">
+              <thead>
+                <tr class="border-b text-[11px] text-slate-400 uppercase tracking-wider">
+                  <th class="py-2">Block #</th>
+                  <th class="py-2">Action</th>
+                  <th class="py-2">Actor Role</th>
+                  <th class="py-2">Entity</th>
+                  <th class="py-2">SHA-256 Hash</th>
+                  <th class="py-2">Timestamp</th>
+                </tr>
+              </thead>
+              <tbody id="audit-ledger-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ========================================== -->
+  <!-- MODALS -->
+  <!-- ========================================== -->
+
+  <!-- Modal 1: Booking & PCI-Tokenized Payment -->
+  <div id="booking-modal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+      <div class="flex justify-between items-start mb-4">
+        <div>
+          <span class="text-xs font-bold text-sky-600 uppercase">Confirm Booking</span>
+          <h3 id="book-modal-roomtype-name" class="text-lg font-bold text-slate-900"></h3>
+          <div id="book-modal-rate" class="text-sm font-semibold text-slate-600"></div>
+        </div>
+        <button onclick="closeBookingModal()" class="text-slate-400 hover:text-slate-600 text-xl">✕</button>
+      </div>
+
+      <input type="hidden" id="book-modal-roomtype-id">
+      <input type="hidden" id="book-modal-checkin">
+      <input type="hidden" id="book-modal-checkout">
+
+      <div class="space-y-3 mb-6">
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">First Name</label>
+            <input type="text" id="book-modal-first" placeholder="e.g. Liam" class="w-full bg-slate-50 border rounded-lg px-3 py-2 text-xs">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Last Name</label>
+            <input type="text" id="book-modal-last" placeholder="e.g. Sterling" class="w-full bg-slate-50 border rounded-lg px-3 py-2 text-xs">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Email Address (AES-256 Encrypted)</label>
+          <input type="email" id="book-modal-email" placeholder="liam@example.com" class="w-full bg-slate-50 border rounded-lg px-3 py-2 text-xs">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Phone Number (Blind-Indexed)</label>
+          <input type="text" id="book-modal-phone" placeholder="+1 555-0199" class="w-full bg-slate-50 border rounded-lg px-3 py-2 text-xs">
+        </div>
+        <div class="bg-slate-50 border rounded-lg p-3 text-[11px] text-slate-600 flex items-center space-x-2">
+          <span>🔒</span>
+          <span>PCI-DSS Level 1: Payment card will be tokenized via zero-raw-storage gateway.</span>
+        </div>
+      </div>
+
+      <div class="flex gap-3">
+        <button onclick="closeBookingModal()" class="flex-1 bg-slate-100 text-slate-700 font-semibold py-2 rounded-lg text-xs">Cancel</button>
+        <button onclick="submitBooking()" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 rounded-lg text-xs">Confirm & Tokenize</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: Sub-60s Check-In Room Assigner -->
+  <div id="checkin-modal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+      <div class="flex justify-between items-start mb-4">
+        <div>
+          <span class="text-xs font-bold text-emerald-600 uppercase">⚡ 60s Expedited Check-In</span>
+          <h3 id="checkin-modal-guest-name" class="text-lg font-bold text-slate-900"></h3>
+          <div id="checkin-modal-room-type" class="text-xs text-slate-500"></div>
+        </div>
+        <button onclick="closeCheckInModal()" class="text-slate-400 hover:text-slate-600 text-xl">✕</button>
+      </div>
+
+      <input type="hidden" id="checkin-modal-res-id">
+
+      <div class="space-y-4 mb-6">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Assign Inspected Room:</label>
+          <select id="checkin-modal-room-select" class="w-full bg-slate-50 border rounded-lg px-3 py-2 text-xs font-medium"></select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Pre-Authorize Incidental Hold Amount ($):</label>
+          <input type="number" id="checkin-modal-hold-amt" value="100.00" class="w-full bg-slate-50 border rounded-lg px-3 py-2 text-xs font-bold text-slate-900">
+          <p class="text-[10px] text-slate-500 mt-1">Holds funds on guest card token without immediate settlement.</p>
+        </div>
+        <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 p-3 rounded-lg text-xs flex items-center space-x-2">
+          <span>🔑</span>
+          <span>Native hardware encoder bridge will automatically burn RFID & BLE credentials.</span>
+        </div>
+      </div>
+
+      <div class="flex gap-3">
+        <button onclick="closeCheckInModal()" class="flex-1 bg-slate-100 text-slate-700 font-semibold py-2 rounded-lg text-xs">Cancel</button>
+        <button onclick="executeCheckIn()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-lg text-xs">Authorize & Issue Key</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: Post Incidental Charge -->
+  <div id="charge-modal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6">
+      <div class="flex justify-between items-start mb-4">
+        <div>
+          <span class="text-xs font-bold text-sky-600 uppercase">Post Charge</span>
+          <h3 class="text-base font-bold text-slate-900">Add Incidental to <span id="charge-modal-folio-type"></span> Folio</h3>
+        </div>
+        <button onclick="closePostChargeModal()" class="text-slate-400 hover:text-slate-600 text-xl">✕</button>
+      </div>
+
+      <input type="hidden" id="charge-modal-folio-id">
+
+      <div class="space-y-3 mb-6">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Charge Category</label>
+          <select id="charge-modal-cat" class="w-full bg-slate-50 border rounded-lg px-3 py-2 text-xs">
+            <option value="RESTAURANT">Restaurant / Fine Dining</option>
+            <option value="MINIBAR">Minibar Beverages & Snacks</option>
+            <option value="ROOM_SERVICE">24h In-Room Dining</option>
+            <option value="SPA">Spa & Wellness Treatment</option>
+            <option value="PARKING">Valet Parking</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Item Description</label>
+          <input type="text" id="charge-modal-desc" placeholder="e.g. Ribeye Steak & Wine" class="w-full bg-slate-50 border rounded-lg px-3 py-2 text-xs">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Pre-Tax Amount ($)</label>
+          <input type="number" step="0.01" id="charge-modal-amt" placeholder="45.00" class="w-full bg-slate-50 border rounded-lg px-3 py-2 text-xs">
+        </div>
+      </div>
+
+      <div class="flex gap-2">
+        <button onclick="closePostChargeModal()" class="flex-1 bg-slate-100 text-slate-700 font-semibold py-2 rounded-lg text-xs">Cancel</button>
+        <button onclick="submitPostCharge()" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 rounded-lg text-xs">Post to Folio</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 4: MFA Verification Challenge -->
+  <div id="mfa-modal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center">
+      <div class="w-12 h-12 rounded-full bg-sky-100 text-sky-600 flex items-center justify-center mx-auto mb-3 text-xl">🔒</div>
+      <h3 class="text-lg font-bold text-slate-900 mb-1">Two-Factor Authentication</h3>
+      <p class="text-xs text-slate-500 mb-4">MFA is required for <span id="mfa-modal-username" class="font-bold text-slate-800"></span>.</p>
+      
+      <input type="text" id="mfa-code-input" placeholder="6-digit code (or recovery token)" 
+        class="w-full bg-slate-50 border rounded-lg px-3 py-2 text-center text-lg font-mono tracking-widest mb-2 focus:ring-sky-500">
+      
+      <div class="mb-4">
+        <button onclick="quickFillMfa()" class="text-[11px] text-sky-600 hover:underline">
+          ⚡ Quick-Fill Demo Recovery Code (A1B2-C3D4)
+        </button>
+      </div>
+
+      <div class="flex gap-2">
+        <button onclick="closeMfaModal()" class="flex-1 bg-slate-100 text-slate-700 font-semibold py-2 rounded-lg text-xs">Cancel</button>
+        <button onclick="submitMfaCode()" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 rounded-lg text-xs">Verify Code</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 5: Night Audit EOD Result & ERP Export -->
+  <div id="audit-result-modal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6">
+      <div class="text-center mb-6">
+        <div class="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-2 text-2xl">✨</div>
+        <h3 class="text-xl font-black text-slate-900">Night Audit Completed Successfully!</h3>
+        <p class="text-xs text-slate-500">Financial journals reconciled and operational business date advanced.</p>
+      </div>
+
+      <div class="bg-slate-50 border rounded-xl p-4 space-y-2 text-xs mb-6">
+        <div class="flex justify-between"><span class="text-slate-500">Closed Business Date:</span><span id="audit-result-closed-date" class="font-bold"></span></div>
+        <div class="flex justify-between"><span class="text-slate-500">New Operational Date:</span><span id="audit-result-new-date" class="font-bold text-emerald-600"></span></div>
+        <div class="flex justify-between"><span class="text-slate-500">Occupancy Rate:</span><span id="audit-result-occ" class="font-bold"></span></div>
+        <div class="flex justify-between"><span class="text-slate-500">Room Revenue:</span><span id="audit-result-rev" class="font-bold"></span></div>
+        <div class="flex justify-between"><span class="text-slate-500">Lodging Taxes Posted:</span><span id="audit-result-tax" class="font-bold"></span></div>
+        <div class="flex justify-between"><span class="text-slate-500">F&B Incidental Revenue:</span><span id="audit-result-inc" class="font-bold"></span></div>
+      </div>
+
+      <div class="border-t pt-4 mb-6">
+        <div class="text-xs font-bold text-slate-700 mb-2">Sync with Enterprise Accounting ERP:</div>
+        <div class="grid grid-cols-2 gap-3">
+          <button id="btn-download-netsuite" class="bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-800 text-xs font-semibold py-2 px-3 rounded-lg flex items-center justify-center space-x-1">
+            <span>📥 NetSuite CSV Journal</span>
+          </button>
+          <button id="btn-download-qb" class="bg-sky-50 hover:bg-sky-100 border border-sky-200 text-sky-800 text-xs font-semibold py-2 px-3 rounded-lg flex items-center justify-center space-x-1">
+            <span>📥 QuickBooks IIF Journal</span>
+          </button>
+        </div>
+      </div>
+
+      <button onclick="closeAuditResultModal()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-lg text-xs">
+        Done
+      </button>
+    </div>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
+
